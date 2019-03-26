@@ -9,7 +9,7 @@ main.app(
   header.head(
     :class="headModifierClasses"
   )
-    h1.head__title ECAL Hours
+    h1.head__title Hours
     .head__close(
       v-if="totalHours > 0"
       @click="resetData"
@@ -32,6 +32,13 @@ main.app(
   ul.summary(
     v-else
   )
+    li.summary__item.summary__item--reverse
+      h5.summary__item-title.summary__item--bold.summary__item--big Enter Rate
+      p.summary__item-rate.summary__item--bold.summary__item--big(
+        contenteditable="true"
+        v-contenteditable="rate"
+      )
+
     li.summary__item(
       v-for="(item, key) in summary"
     )
@@ -58,13 +65,14 @@ main.app(
       p.summary__item-total.summary__item--bold {{ totalDaysLeft }}
 
     li.summary__item
-      h5.summary__item-title.summary__item--bold.summary__item--big Rate
+      h5.summary__item-title.summary__item--bold.summary__item--big Actual Rate
       p.summary__item-total.summary__item--bold.summary__item--big {{ totalRate }}
 </template>
 
 <script>
 import { icsToJson } from '@/utils/ics'
 import * as moment from 'moment'
+import { b64ToString } from '@/utils/string'
 
 export default {
   name: 'app',
@@ -72,7 +80,8 @@ export default {
   data () {
     return {
       totalHours: 0,
-      rate: 40,
+      initialRateValue: 100,
+      rateValue: 100,
       summary: {},
       isInputHovered: false,
       isInputWrong: false,
@@ -85,6 +94,18 @@ export default {
       return {
         'head--over': this.isInputHovered,
         'head--error': this.isInputWrong
+      }
+    },
+
+    rate: {
+      get () {
+        return this.rateValue ? this.rateValue : this.initialRateValue
+      },
+
+      set (value) {
+        this.rateValue = value.trim().length === 0
+          ? this.initialRateValue
+          : value
       }
     },
 
@@ -115,14 +136,10 @@ export default {
 
   methods: {
     onDragOver (e) {
-      // e.preventDefault()
-      // e.stopPropagation()
       this.isInputHovered = true
     },
 
     onDragLeave (e) {
-      // e.preventDefault()
-      // e.stopPropagation()
       this.isInputHovered = false
     },
 
@@ -162,7 +179,7 @@ export default {
           const { target } = e
           const { result } = target
           // Decode base64
-          resolve(this.b64DecodeUnicode(result.split(',').pop()))
+          resolve(b64ToString(result.split(',').pop()))
         }
         reader.onerror = e => reject(e)
         reader.readAsDataURL(file)
@@ -193,12 +210,6 @@ export default {
         this.summary[summary.value].total += diffHours / 60
         this.summary[summary.value].number++
       }
-    },
-
-    b64DecodeUnicode (string) {
-      return decodeURIComponent(atob(string).split('').map(c => {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-      }).join(''))
     }
   }
 }
@@ -250,6 +261,7 @@ h1, h2, h3, h4, h5, p, a, li, ul {
   padding: 0.5rem;
   background: black;
   color: white;
+  border-bottom: solid 1px;
 
   &--over {
     background: rgb(200, 200, 200);
@@ -263,6 +275,7 @@ h1, h2, h3, h4, h5, p, a, li, ul {
   &__close {
     font-weight: bold;
     font-size: 2em;
+    line-height: 1;
     color: inherit;
   }
 
@@ -324,6 +337,19 @@ h1, h2, h3, h4, h5, p, a, li, ul {
 
     &-total {
       color: inherit;
+    }
+
+    &-rate {
+      border-bottom: solid 1px;
+      color: white;
+
+      &:focus {
+        outline: none;
+      }
+
+      &::after {
+        content: '%'
+      }
     }
 
     @media screen and (max-width: 600px) {
