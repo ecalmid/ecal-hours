@@ -14,7 +14,7 @@ main.app(
       v-if="totalHours > 0"
       @click="resetData"
     )
-      span ✕
+      span Clear ✕
 
   section.dropzone(
     v-if="totalHours === 0"
@@ -262,6 +262,8 @@ h1, h2, h3, h4, h5, p, a, li, ul {
   background: black;
   color: white;
   border-bottom: solid 1px;
+  position: sticky;
+  top: 0;
 
   &--over {
     background: rgb(200, 200, 200);
@@ -277,10 +279,19 @@ h1, h2, h3, h4, h5, p, a, li, ul {
     font-size: 2em;
     line-height: 1;
     color: inherit;
+    white-space: nowrap;
   }
 
   &__title {
-    width: 100%;
+    width: 50%;
+    max-width: 500px;
+  }
+
+  @media screen and (max-width: 600px) {
+    &__title {
+      width: 100%;
+      max-width: 100%;
+    }
   }
 
   &__close {
@@ -326,8 +337,8 @@ h1, h2, h3, h4, h5, p, a, li, ul {
 
     &-title {
       color: inherit;
-      width: 40%;
-      max-width: 450px;
+      width: 50%;
+      max-width: 500px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -353,7 +364,7 @@ h1, h2, h3, h4, h5, p, a, li, ul {
     }
 
     @media screen and (max-width: 600px) {
-    &-title {
+      &-title {
         width: 100%;
         max-width: 100%;
       }
