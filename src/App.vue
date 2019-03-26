@@ -1,25 +1,36 @@
 <template lang="pug">
-.app(
+main.app(
+  @dragenter="onDragOver"
   @dragstart="onDragOver"
   @dragover="onDragOver"
   @dragleave="onDragLeave"
   @drop="onDrop"
 )
-  .app__head(
+  header.head(
     :class="headModifierClasses"
   )
-    h1.app__title Hours
-    h5.app__infos Click or drag a file [.ics] on the page
-    input.app__input(
-      ref="fileInput"
-      type="file"
-      accept=".ics"
-      @change="onFileInput"
-      multiple
+    h1.head__title ECAL Hours
+    .head__close(
+      v-if="totalHours > 0"
+      @click="resetData"
     )
+      span ✕
+
+  section.dropzone(
+    v-if="totalHours === 0"
+  )
+    .dropzone__inner
+      span Click here or drag and drop some file [.ics]
+      input.dropzone__input(
+        ref="fileInput"
+        type="file"
+        accept=".ics"
+        @change="onFileInput"
+        multiple
+      )
 
   ul.summary(
-    v-if="totalHours > 0"
+    v-else
   )
     li.summary__item(
       v-for="(item, key) in summary"
@@ -27,23 +38,33 @@
       h5.summary__item-title {{ `${key.toUpperCase()} [${item.number} events]` }}
       p.summary__item--total.summary__item--bold {{ `${item.total}h` }}
 
+    li.summary__item.summary__item--reverse
+      h5.summary__item-title -
+
     li.summary__item
       h5.summary__item-title.summary__item--bold.summary__item--big Total Hours
       p.summary__item-total.summary__item--bold.summary__item--big {{ `${totalHours}h` }}
 
+    li.summary__item.summary__item--reverse
+      h5.summary__item-title.summary__item--bold Total Hours Left
+      p.summary__item-total.summary__item--bold {{ `${totalHoursLeft}h` }}
+
     li.summary__item
       h5.summary__item-title.summary__item--bold.summary__item--big Total Days
-      p.summary__item-total.summary__item--bold.summary__item--big {{ `${(totalHours / 8).toFixed(2)}` }}
+      p.summary__item-total.summary__item--bold.summary__item--big {{ totalDays }}
+
+    li.summary__item.summary__item--reverse
+      h5.summary__item-title.summary__item--bold Total Days Left
+      p.summary__item-total.summary__item--bold {{ totalDaysLeft }}
 
     li.summary__item
       h5.summary__item-title.summary__item--bold.summary__item--big Rate
-      p.summary__item-total.summary__item--bold.summary__item--big {{ rate }}
+      p.summary__item-total.summary__item--bold.summary__item--big {{ totalRate }}
 </template>
 
 <script>
 import { icsToJson } from '@/utils/ics'
 import * as moment from 'moment'
-// import {RRule} from 'rrule'
 
 export default {
   name: 'app',
@@ -51,40 +72,57 @@ export default {
   data () {
     return {
       totalHours: 0,
+      rate: 40,
       summary: {},
-      isInputHighlighted: false,
       isInputHovered: false,
       isInputWrong: false,
-      fulTimeHours: 1920
+      fullTimeHours: 1920
     }
   },
 
   computed: {
     headModifierClasses () {
       return {
-        'app--highlight': this.isInputHighlighted,
-        'app--over': this.isInputHovered,
-        'app--error': this.isInputWrong
+        'head--over': this.isInputHovered,
+        'head--error': this.isInputWrong
       }
     },
 
-    rate () {
-      return `${((this.totalHours / this.fulTimeHours) * 100).toFixed(2)}%`
+    percentRate () {
+      return parseFloat(this.rate) / 100
+    },
+
+    rateHours () {
+      return this.fullTimeHours * this.percentRate
+    },
+
+    totalRate () {
+      return `${((this.totalHours / this.fullTimeHours) * 100).toFixed(2)}%`
+    },
+
+    totalDays () {
+      return `${(this.totalHours / 8).toFixed(2)}`
+    },
+
+    totalHoursLeft () {
+      return this.rateHours - this.totalHours
+    },
+
+    totalDaysLeft () {
+      return (this.totalHoursLeft / 8).toFixed(0)
     }
   },
 
   methods: {
     onDragOver (e) {
-      e.preventDefault()
-      e.stopPropagation()
-      this.isInputHighlighted = false
+      // e.preventDefault()
+      // e.stopPropagation()
       this.isInputHovered = true
     },
 
     onDragLeave (e) {
-      e.preventDefault()
-      e.stopPropagation()
-      this.isInputHighlighted = false
+      // e.preventDefault()
+      // e.stopPropagation()
       this.isInputHovered = false
     },
 
@@ -106,7 +144,6 @@ export default {
 
             this.computeHours(events)
             this.isInputWrong = false
-            this.isInputHighlighted = true
           } catch (e) {
             console.error(e)
             this.isInputWrong = true
@@ -179,6 +216,11 @@ html {
 
 html, body {
   margin: 0;
+  min-height: 100vh;
+}
+
+body {
+  display: flex;
 }
 
 h1, h2, h3, h4, h5, p, a, li, ul {
@@ -194,54 +236,68 @@ h1, h2, h3, h4, h5, p, a, li, ul {
 
 // STYLE
 .app {
+  display: flex;
+  flex-flow: column;
+  flex-wrap: nowrap;
+  width: 100%;
   font-family: Arial;
+}
 
-  &__head {
-    padding: 0.5rem;
-    border-bottom: solid 1px;
-  }
-
-  &__title {
-    font-weight: bold;
-    font-size: 2em;
-  }
-
-  &__infos {
-    font-size: 1em;
-  }
-
-  &__title,
-  &__infos {
-    color: inherit;
-  }
-
-  &--highlight {
-    color: rgb(0, 255, 0);
-  }
+.head {
+  display: flex;
+  flex: 0 0 auto;
+  width: 100%;
+  padding: 0.5rem;
+  background: black;
+  color: white;
 
   &--over {
-    color: rgb(200, 200, 200);
+    background: rgb(200, 200, 200);
   }
 
   &--error {
-    color: rgb(255, 0, 0);
+    background: rgb(255, 0, 0);
   }
 
-  &__file-text {
-    pointer-events: none;
-  }
-
-  &__file-label {
-    pointer-events: none;
+  &__title,
+  &__close {
     font-weight: bold;
+    font-size: 2em;
+    color: inherit;
+  }
+
+  &__title {
+    width: 100%;
+  }
+
+  &__close {
+    cursor: pointer;
+    user-select: none;
+  }
+}
+
+.dropzone {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0.5em;
+
+  &__inner {
+    width: 100%;
+    height: 100%;
+    border: dashed 1px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   &__input {
     cursor: pointer;
-    position: absolute;
     opacity: 0;
-    left: 0;
+    position: absolute;
     top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
   }
@@ -262,8 +318,12 @@ h1, h2, h3, h4, h5, p, a, li, ul {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      padding: 0.5em 0;
-      margin: -0.5em 0;
+      padding: 0.5rem 0;
+      margin: -0.5rem 0;
+    }
+
+    &-total {
+      color: inherit;
     }
 
     @media screen and (max-width: 600px) {
@@ -271,6 +331,11 @@ h1, h2, h3, h4, h5, p, a, li, ul {
         width: 100%;
         max-width: 100%;
       }
+    }
+
+    &--reverse {
+      background-color: black;
+      color: white;
     }
 
     &--bold {
