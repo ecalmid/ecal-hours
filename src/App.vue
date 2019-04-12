@@ -36,6 +36,7 @@ main.app(
       h5.summary__item-title.summary__item--bold.summary__item--big Enter Rate
       p.summary__item-rate.summary__item--bold.summary__item--big(
         contenteditable="true"
+        @keydown.enter.prevent
         v-contenteditable="rate"
       )
 
