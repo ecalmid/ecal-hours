@@ -71,6 +71,8 @@ main.app(
 
 <script>
 import { icsToJson } from '@/utils/ics'
+// import ical from 'ical'
+import axios from 'axios'
 import * as moment from 'moment'
 import { b64ToString } from '@/utils/string'
 
@@ -85,7 +87,7 @@ export default {
       summary: {},
       isInputHovered: false,
       isInputWrong: false,
-      fullTimeHours: 1920
+      fullTimeHours: 1867.5
     }
   },
 
@@ -145,6 +147,29 @@ export default {
 
     onDrop (e) {
       this.isInputHovered = false
+    },
+
+    async onInput ({ target }) {
+      axios(target.value, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'DELETE,GET,PATCH,POST,PUT',
+          'Access-Control-Allow-Headers': 'Content-Type,Authorization'
+        }
+      }).then(data => {
+        console.log(data)
+      }).catch(e => {
+        console.error(e)
+      })
+      // const data = await this.loadUrl(target.value).catch(e => {
+      //   console.error(e)
+      // })
+      // console.log(data)
+    },
+
+    async loadUrl (url) {
+      console.log(`https://crossorigin.me/${url}`)
+      return fetch(`https://crossorigin.me/${url}`)
     },
 
     async onFileInput () {
