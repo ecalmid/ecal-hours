@@ -37,7 +37,7 @@ main.app(
     v-if="totalHours === 0"
   )
     .dropzone__inner
-      span Click here or drag and drop some file [.ics]
+      span Click here or drag and drop some files [.ics]
       input.dropzone__input(
         ref="fileInput"
         type="file"
