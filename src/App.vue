@@ -16,6 +16,23 @@ main.app(
     )
       span Clear ✕
 
+  section.url(
+    v-show="totalHours === 0"
+  )
+    input.url__input(
+      v-for="input in urlInputs"
+      ref="entries"
+      type="text"
+      placeholder="Enter calendar URL"
+      @input="onUrlInput"
+    )
+
+    input.url__submit(
+      type="submit"
+      value="Load URLs"
+      @click="onUrlSubmit"
+    )
+
   section.dropzone(
     v-if="totalHours === 0"
   )
@@ -72,7 +89,6 @@ main.app(
 
 <script>
 import { icsToJson } from '@/utils/ics'
-// import ical from 'ical'
 import axios from 'axios'
 import * as moment from 'moment'
 import { b64ToString } from '@/utils/string'
@@ -88,7 +104,8 @@ export default {
       summary: {},
       isInputHovered: false,
       isInputWrong: false,
-      fullTimeHours: 1867.5
+      fullTimeHours: 1867.5,
+      urlInputs: 1
     }
   },
 
@@ -150,27 +167,37 @@ export default {
       this.isInputHovered = false
     },
 
-    async onInput ({ target }) {
-      axios(target.value, {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'DELETE,GET,PATCH,POST,PUT',
-          'Access-Control-Allow-Headers': 'Content-Type,Authorization'
-        }
-      }).then(data => {
-        console.log(data)
-      }).catch(e => {
-        console.error(e)
-      })
-      // const data = await this.loadUrl(target.value).catch(e => {
-      //   console.error(e)
-      // })
-      // console.log(data)
+    onUrlInput (e) {
+      const { entries } = this.$refs
+      const emptyEntries = entries.filter(it => !it.value)
+
+      if (emptyEntries.length === 0) {
+        this.urlInputs++
+      }
     },
 
-    async loadUrl (url) {
-      console.log(`https://crossorigin.me/${url}`)
-      return fetch(`https://crossorigin.me/${url}`)
+    async onUrlSubmit () {
+      const { entries } = this.$refs
+      for (const entry of entries) {
+        const { value } = entry
+        const proxyUrl = 'https://cors-anywhere.herokuapp.com/'
+
+        if (value) {
+          axios
+            .get(`${proxyUrl}${value}`)
+            .then(({ data }) => {
+              const icsJSON = icsToJson(data)
+              const { events } = icsJSON
+
+              this.computeHours(events)
+              this.isInputWrong = false
+            })
+            .catch(e => {
+              this.isInputWrong = true
+              console.error(e)
+            })
+        }
+      }
     },
 
     async onFileInput () {
@@ -214,6 +241,7 @@ export default {
 
     resetData () {
       this.totalHours = 0
+      // this.urlInputs = 1
       this.summary = {}
     },
 
@@ -323,6 +351,31 @@ h1, h2, h3, h4, h5, p, a, li, ul {
   &__close {
     cursor: pointer;
     user-select: none;
+  }
+}
+
+.url {
+  width: 100%;
+  padding: 0.5em 0.5em 0 0.5em;
+
+  &__input {
+    width: 100%;
+    font-size: 1em;
+    padding: 0.5em 0;
+    border: none;
+    border-top: solid 1px black;
+  }
+
+  &__submit {
+    background-color: transparent;
+    border: none;
+    border-top: solid 1px black;
+    border-bottom: solid 1px black;
+    font-size: 1em;
+    padding: 0.5em 0;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
   }
 }
 
