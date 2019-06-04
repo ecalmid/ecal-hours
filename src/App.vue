@@ -1,11 +1,16 @@
 <template lang="pug">
 main.app(
+  @click="showDisclamer = false"
   @dragenter="onDragOver"
   @dragstart="onDragOver"
   @dragover="onDragOver"
   @dragleave="onDragLeave"
   @drop="onDrop"
 )
+  disclamer(
+    v-if="showDisclamer"
+  )
+
   header.head(
     :class="headModifierClasses"
   )
@@ -92,12 +97,16 @@ import { icsToJson } from '@/utils/ics'
 import axios from 'axios'
 import * as moment from 'moment'
 import { b64ToString } from '@/utils/string'
+import Disclamer from '@/components/Disclamer'
 
 export default {
   name: 'app',
 
+  components: { Disclamer },
+
   data () {
     return {
+      showDisclamer: true,
       totalHours: 0,
       initialRateValue: 100,
       rateValue: 100,
@@ -156,18 +165,22 @@ export default {
 
   methods: {
     onDragOver (e) {
+      this.showDisclamer = false
       this.isInputHovered = true
     },
 
     onDragLeave (e) {
+      this.showDisclamer = false
       this.isInputHovered = false
     },
 
     onDrop (e) {
+      this.showDisclamer = false
       this.isInputHovered = false
     },
 
     onUrlInput (e) {
+      this.showDisclamer = false
       const { entries } = this.$refs
       const emptyEntries = entries.filter(it => !it.value)
 
