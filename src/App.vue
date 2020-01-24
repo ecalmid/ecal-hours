@@ -260,22 +260,26 @@ export default {
 
     computeHours (events) {
       for (const event of events) {
-        const { startDate, endDate, summary = 'Undefined event' } = event
-        if (!this.summary[summary.value]) {
-          this.summary[summary.value] = {
-            total: 0,
-            number: 0
+        const defaultSummary = { value: 'Undefined event' }
+        const { startDate, endDate, summary = defaultSummary } = event
+
+        if (startDate && endDate) {
+          if (!this.summary[summary.value]) {
+            this.summary[summary.value] = {
+              total: 0,
+              number: 0
+            }
           }
+
+          const start = moment(startDate.value.trim().toUpperCase())
+          const end = moment(endDate.value.trim().toUpperCase())
+
+          // Take minutes in count
+          const diffHours = end.diff(start, 'minutes')
+          this.totalHours += diffHours / 60
+          this.summary[summary.value].total += diffHours / 60
+          this.summary[summary.value].number++
         }
-
-        const start = moment(startDate.value.trim().toUpperCase())
-        const end = moment(endDate.value.trim().toUpperCase())
-
-        // Take minutes in count
-        const diffHours = end.diff(start, 'minutes')
-        this.totalHours += diffHours / 60
-        this.summary[summary.value].total += diffHours / 60
-        this.summary[summary.value].number++
       }
     }
   }
