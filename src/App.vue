@@ -260,7 +260,7 @@ export default {
 
     computeHours (events) {
       for (const event of events) {
-        const { startDate, endDate, summary } = event
+        const { startDate, endDate, summary = 'Undefined event' } = event
         if (!this.summary[summary.value]) {
           this.summary[summary.value] = {
             total: 0,
