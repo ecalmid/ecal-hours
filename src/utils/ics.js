@@ -1,6 +1,7 @@
 import { camelize } from './string'
 import { cloneObject } from './objects'
 import { RRule } from 'rrule'
+import * as moment from 'moment'
 
 const NEW_LINE = /\r\n|\n|\r/
 const START_CALENDAR = 'BEGIN:VCALENDAR'
@@ -36,6 +37,7 @@ export function icsToJson (icsString) {
   const json = {
     events: []
   }
+
   let currentObject = null
   const lines = icsString.split(NEW_LINE)
 
@@ -87,6 +89,12 @@ export function icsToJson (icsString) {
       }
     }
   }
+
+  json.events = json.events.sort((a, b) => {
+    const startA = moment(a.startDate.value.trim().toUpperCase())
+    const startB = moment(b.startDate.value.trim().toUpperCase())
+    return startA.unix() - startB.unix()
+  })
 
   return json
 }

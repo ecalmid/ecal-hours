@@ -62,11 +62,27 @@ main.app(
         v-contenteditable="rate"
       )
 
-    li.summary__item(
-      v-for="(item, key) in summary"
-    )
-      h5.summary__item-title {{ `${key.toUpperCase()} [${item.number} events]` }}
-      p.summary__item--total.summary__item--bold {{ `${item.total}h` }}
+    template(v-for="(item, key) in summary")
+      li.summary__item.summary__item--selectable(
+        :class="getSummaryItemCssClasses(item)"
+        @click="toggleSummaryItem(item)"
+      )
+        h5.summary__item-title {{ `${key.toUpperCase()} [${item.number} events]` }}
+        p.summary__item--total.summary__item--bold {{ `${item.total}h` }}
+
+      ul.summary__sub-items
+        li.summary__sub-item(
+          v-if="showSubItems(item)"
+          v-for="event of item.events"
+        )
+          span.summary__sub-item-dates {{ getEventDate(event) }}
+          span.summary__sub-item-hours {{ getEventHours(event) }}
+          span.summary__sub-item-duration {{ getEventDuration(event) }}
+          .summary__sub-item-total(
+            @click="toggleSubItemTotal(event)"
+          )
+            span(v-if="showSubItemTotal(event)") {{ getEventTotal(item.events, event) }}
+            span(v-else) Show Total
 
     li.summary__item.summary__item--reverse
       h5.summary__item-title -
@@ -114,7 +130,9 @@ export default {
       isInputHovered: false,
       isInputWrong: false,
       fullTimeHours: 1867.5,
-      urlInputs: 1
+      urlInputs: 1,
+      shownItems: [],
+      shownSubItemsTotals: []
     }
   },
 
@@ -164,6 +182,93 @@ export default {
   },
 
   methods: {
+    toggleSummaryItem (item) {
+      const index = this.shownItems.indexOf(item)
+      if (index > -1) {
+        this.shownItems.splice(index, 1)
+      } else {
+        this.shownItems.push(item)
+      }
+    },
+
+    showSubItems (item) {
+      return this.shownItems.indexOf(item) > -1
+    },
+
+    toggleSubItemTotal (item) {
+      const index = this.shownSubItemsTotals.indexOf(item)
+      if (index > -1) {
+        this.shownSubItemsTotals.splice(index, 1)
+      } else {
+        this.shownSubItemsTotals.push(item)
+      }
+    },
+
+    showSubItemTotal (item) {
+      return this.shownSubItemsTotals.indexOf(item) > -1
+    },
+
+    getSummaryItemCssClasses (item) {
+      return {
+        'summary__item--highlight': this.showSubItems(item)
+      }
+    },
+
+    getEventMoments (event) {
+      const { startDate, endDate } = event
+      const start = moment(startDate.value.trim().toUpperCase())
+      const end = moment(endDate.value.trim().toUpperCase())
+      return { start, end }
+    },
+
+    getEventSummary (event) {
+      const defaultSummary = { value: 'Undefined event' }
+      const summaryKey = Object.keys(event).find((it) => it.includes('summary'))
+      return event[summaryKey] || defaultSummary
+    },
+
+    getEventDate (event) {
+      const { start, end } = this.getEventMoments(event)
+      const startDate = start.format('DD.MM.YYYY')
+      const endDate = end.format('DD.MM.YYYY')
+      return startDate !== endDate
+        ? `${startDate} - ${endDate}`
+        : startDate
+    },
+
+    getEventHours (event) {
+      const { start, end } = this.getEventMoments(event)
+      return `${start.format('HH:mm')} - ${end.format('HH:mm')}`
+    },
+
+    getEventDuration (event) {
+      const diff = this.getEventMinutesDiff(event) / 60
+      const hours = Math.floor(diff)
+      const minutes = (diff - hours) * 60
+      return `${hours ? `${hours}h` : ''}${minutes ? `${minutes}m` : ''}`
+    },
+
+    getEventMinutesDiff (event) {
+      const { start, end } = this.getEventMoments(event)
+      return end.diff(start, 'minutes')
+    },
+
+    getEventTotal (events, eventTarget) {
+      const targetIndex = events.indexOf(eventTarget)
+      const minutesToEvent = events.reduce((total, event, index) => {
+        if (index <= targetIndex) {
+          const diff = this.getEventMinutesDiff(event)
+          total += diff / 60
+        }
+
+        return total
+      }, 0)
+
+      const hours = Math.floor(minutesToEvent)
+      const minutes = (minutesToEvent - hours) * 60
+      return `${hours ? `${hours}h` : ''}${minutes ? `${minutes}m` : ''}`
+    },
+
     onDragOver (e) {
       this.showDisclamer = false
       this.isInputHovered = true
@@ -260,14 +365,15 @@ export default {
 
     computeHours (events) {
       for (const event of events) {
-        const defaultSummary = { value: 'Undefined event' }
-        const { startDate, endDate, summary = defaultSummary } = event
+        const { startDate, endDate } = event
+        const summary = this.getEventSummary(event)
 
         if (startDate && endDate) {
           if (!this.summary[summary.value]) {
             this.summary[summary.value] = {
               total: 0,
-              number: 0
+              number: 0,
+              events: []
             }
           }
 
@@ -279,6 +385,7 @@ export default {
           this.totalHours += diffHours / 60
           this.summary[summary.value].total += diffHours / 60
           this.summary[summary.value].number++
+          this.summary[summary.value].events.push(event)
         }
       }
     }
@@ -308,7 +415,7 @@ body {
 h1, h2, h3, h4, h5, p, a, li, ul {
   margin: 0;
   padding: 0;
-  color: black;
+  color: inherit;
   text-decoration: none;
   list-style: none;
   font-size: 1em;
@@ -425,6 +532,7 @@ h1, h2, h3, h4, h5, p, a, li, ul {
 
 .summary {
   &__item,
+  &__sub-item,
   &__foot-item {
     color: black;
     display: flex;
@@ -477,6 +585,62 @@ h1, h2, h3, h4, h5, p, a, li, ul {
 
     &--big {
       font-size: 2em;
+    }
+  }
+
+  &__item {
+    &--highlight {
+      background-color: black;
+      color: white;
+    }
+
+    &--selectable {
+      user-select: none;
+      cursor: pointer;
+
+      &:hover {
+        background-color: black;
+        color: white;
+      }
+    }
+  }
+
+  &__sub-item {
+    border-color: grey;
+    border-bottom-style: dashed;
+
+    &:last-child {
+      border-bottom-style: solid;
+      border-color: black;
+    }
+
+    span {
+      color: grey;
+    }
+
+    &-dates {
+      width: 50%;
+      max-width: 500px;
+    }
+
+    &-hours {
+      width: 25%;
+    }
+
+    &-duration {
+      width: 12.5%;
+    }
+
+    &-total {
+      width: 12.5%;
+      cursor: pointer;
+      user-select: none;
+
+      &:hover {
+        span {
+          color: black;
+        }
+      }
     }
   }
 
