@@ -1,5 +1,8 @@
 <template lang="pug">
 .loader
+  .loader__files(v-if="calendars.length > 0")
+    files
+
   .loader__import
     section.loader__url
       input.loader__url-input(
@@ -26,9 +29,6 @@
           @change="onFileInput"
           multiple
         )
-
-  .loader__files(v-if="calendars.length > 0")
-    files
 </template>
 
 <script>
