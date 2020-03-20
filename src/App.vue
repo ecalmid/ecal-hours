@@ -40,6 +40,16 @@ import Overview from '@/components/Overview'
 export default {
   name: 'app',
 
+  metaInfo: {
+    title: 'Hours',
+    meta: [
+      { charset: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-status-bar-style', content: 'black' }
+    ]
+  },
+
   components: {
     Disclamer,
     Loader,
