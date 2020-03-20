@@ -7,9 +7,9 @@ main.app(
   @dragleave="onDragLeave"
   @drop="onDrop"
 )
-  //- disclamer(
-  //-   v-if="showDisclamer"
-  //- )
+  disclamer(
+    v-if="showDisclamer"
+  )
 
   header.head(
     :class="headModifierClasses"
