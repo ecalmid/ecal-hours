@@ -1,6 +1,6 @@
 <template lang="pug">
 .loader
-  .loader__files(v-if="calendars.length > 0")
+  .loader__files(v-if="showFiles")
     files(@onLoad="$emit('onLoad')")
 
   .loader__import
@@ -43,7 +43,11 @@ export default {
   components: { Files },
 
   computed: {
-    ...mapGetters(['calendars'])
+    ...mapGetters(['calendars', 'urls']),
+
+    showFiles () {
+      return this.calendars.length > 0 || this.urls.length > 0
+    }
   },
 
   data () {

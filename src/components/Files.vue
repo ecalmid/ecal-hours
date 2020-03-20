@@ -63,6 +63,9 @@ export default {
   &__name {
     width: 100%;
     padding: 0.5em 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__extention {
@@ -70,6 +73,7 @@ export default {
     text-align: center;
     padding: 0.5em;
     border-left: solid 1px black;
+    flex: 0 0 auto;
   }
 }
 </style>
