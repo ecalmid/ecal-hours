@@ -9,7 +9,7 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
   state: {
     fullTimeHours: 1867.5,
-    eventGroups: {},
+    urls: [],
     calendars: [],
     selectedCalendars: []
   },
@@ -41,16 +41,12 @@ const store = new Vuex.Store({
       return getGroupsForEvents(events)
     },
 
-    eventGroups ({ eventGroups }) {
-      return eventGroups
-    },
-
     fullTimeHours ({ fullTimeHours }) {
       return fullTimeHours
     },
 
-    totalHours ({ eventGroups }) {
-      const groups = Object.values(eventGroups)
+    totalHours (state, getters) {
+      const groups = Object.values(getters.selectedEventsByGroups)
       return groups.reduce((totalHours, group) => {
         const { events } = group
         return totalHours + events.reduce((totalHours, event) => {
@@ -61,15 +57,6 @@ const store = new Vuex.Store({
   },
 
   mutations: {
-    setEventGroups (state, eventGroups) {
-      state.eventGroups = eventGroups
-    },
-
-    addEventGroup (state, group) {
-      const { key, value } = group
-      state.eventGroups[key] = value
-    },
-
     addCalendar (state, calendar) {
       const { calendars } = state
       const { calName: newCalName } = calendar
@@ -120,16 +107,6 @@ const store = new Vuex.Store({
         const existingCalendar = getters.getCalendarByName(calName.value)
         commit('selectCalendar', existingCalendar)
       }
-    },
-
-    async setEventGroups ({ commit }, groups) {
-      const { content } = groups
-      await db.put({
-        _id: new Date().toISOString(),
-        ...content
-      })
-
-      commit('setEventGroups', groups)
     }
   }
 })
