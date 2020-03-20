@@ -11,8 +11,8 @@ const store = new Vuex.Store({
   },
 
   getters: {
-    eventGroups (state) {
-      return state.eventGroups
+    eventGroups ({ eventGroups }) {
+      return eventGroups
     },
 
     fullTimeHours ({ fullTimeHours }) {

@@ -15,6 +15,7 @@ main.app(
     :class="headModifierClasses"
   )
     h1.head__title Hours
+    span.head__error {{ error }}
     .head__close(
       v-if="showOverview"
       @click="reset"
@@ -22,7 +23,11 @@ main.app(
       span Clear ✕
 
   overview(v-if="showOverview")
-  loader(v-else)
+  loader(
+    v-else
+    @onLoad="onLoad"
+    @onError="onError"
+  )
 
 </template>
 
@@ -39,16 +44,10 @@ export default {
 
   data () {
     return {
+      error: null,
       showDisclamer: true,
-      totalHours: 0,
-      initialRateValue: 100,
-      rateValue: 100,
-      summary: {},
       isInputHovered: false,
-      isInputWrong: false,
-      fullTimeHours: 1867.5,
-      shownItems: [],
-      shownSubItemsTotals: []
+      isInputWrong: false
     }
   },
 
@@ -62,7 +61,7 @@ export default {
     headModifierClasses () {
       return {
         'head--over': this.isInputHovered,
-        'head--error': this.isInputWrong
+        'head--error': this.error
       }
     }
   },
@@ -81,6 +80,14 @@ export default {
     onDrop () {
       this.showDisclamer = false
       this.isInputHovered = false
+    },
+
+    onLoad () {
+      this.error = null
+    },
+
+    onError (error) {
+      this.error = error
     },
 
     reset () {
@@ -149,7 +156,8 @@ h1, h2, h3, h4, h5, p, a, li, ul {
   }
 
   &__title,
-  &__close {
+  &__close,
+  &__error {
     font-weight: bold;
     font-size: 2em;
     line-height: 1;

@@ -59,23 +59,40 @@ export default {
         .filter(({ value }) => value)
         .map(({ value }) => axios.get(`${proxyUrl}${value}`))
 
-      const responses = await Promise.all(requests)
-      const icsTexts = responses.map(({ data }) => data)
-      const eventGroups = this.getEventGroupsFromIcsTexts(icsTexts)
-      this.$store.commit('setEventGroups', eventGroups)
+      try {
+        const responses = await Promise.all(requests)
+        const icsTexts = responses.map(({ data }) => data)
+        const eventGroups = this.getEventGroupsFromIcsTexts(icsTexts)
+        this.$store.commit('setEventGroups', eventGroups)
+        this.$emit('onLoad')
+      } catch (error) {
+        this.$emit('onError', error)
+      }
     },
 
     async onFileInput () {
       const { fileInput } = this.$refs
       const { files } = fileInput
 
-      const fileReaders = [...files]
-        .filter(({ name }) => name.includes('.ics'))
-        .map((file) => this.readFromFile(file))
+      try {
+        this.validateFiles(files)
+        const fileReaders = [...files].map((file) => this.readFromFile(file))
+        const icsTexts = await Promise.all(fileReaders)
+        const eventGroups = this.getEventGroupsFromIcsTexts(icsTexts)
+        this.$store.commit('setEventGroups', eventGroups)
+        this.$emit('onLoad')
+      } catch (error) {
+        this.$emit('onError', error)
+      }
+    },
 
-      const icsTexts = await Promise.all(fileReaders)
-      const eventGroups = this.getEventGroupsFromIcsTexts(icsTexts)
-      this.$store.commit('setEventGroups', eventGroups)
+    validateFiles (files) {
+      const filesAreValid = [...files].every(({ name }) => name.includes('.ics'))
+      if (!filesAreValid) {
+        throw new Error('Only ICS files are supported')
+      } else {
+        return true
+      }
     },
 
     async readFromFile (file) {
