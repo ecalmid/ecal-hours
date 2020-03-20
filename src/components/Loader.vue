@@ -1,7 +1,7 @@
 <template lang="pug">
 .loader
   .loader__files(v-if="calendars.length > 0")
-    files
+    files(@onLoad="$emit('onLoad')")
 
   .loader__import
     section.loader__url
@@ -32,7 +32,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import * as moment from 'moment'
 import { mapGetters } from 'vuex'
 import { icsToJson } from '@/utils/ics'
@@ -67,16 +66,12 @@ export default {
       const proxyUrl = 'https://cors-anywhere.herokuapp.com/'
       const { entries } = this.$refs
 
-      const requests = entries
+      const urls = entries
         .filter(({ value }) => value)
-        .map(({ value }) => axios.get(`${proxyUrl}${value}`))
+        .map(({ value }) => `${proxyUrl}${value}`)
 
       try {
-        const responses = await Promise.all(requests)
-        const icsTexts = responses.map(({ data }) => data)
-        const calendars = icsTexts.map(icsToJson)
-        await this.$store.dispatch('addCalendars', calendars)
-        this.$store.dispatch('selectCalendars', calendars)
+        await this.$store.dispatch('loadUrls', urls)
         this.$emit('onLoad')
       } catch (error) {
         this.$emit('onError', error)

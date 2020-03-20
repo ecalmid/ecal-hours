@@ -1,8 +1,10 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import axios from 'axios'
 import PouchDB from 'pouchdb'
 import PouchDBFind from 'pouchdb-find'
 import { getEventDuration, getGroupsForEvents } from '@/utils/events'
+import { icsToJson } from '@/utils/ics'
 
 Vue.use(Vuex)
 
@@ -17,6 +19,10 @@ const store = new Vuex.Store({
   getters: {
     calendars ({ calendars }) {
       return calendars
+    },
+
+    urls ({ urls }) {
+      return urls
     },
 
     getCalendarByName: (state) => (name) => {
@@ -76,6 +82,20 @@ const store = new Vuex.Store({
       state.selectedCalendars.push(calendar)
     },
 
+    addUrl (state, url) {
+      const { urls } = state
+
+      const urlIndex = urls.findIndex(({ name }) => {
+        return name === url.name
+      })
+
+      if (urlIndex > -1) {
+        urls.splice(urlIndex, 1)
+      }
+
+      urls.push(url)
+    },
+
     resetState (state) {
       state.selectedCalendars = []
     }
@@ -107,6 +127,45 @@ const store = new Vuex.Store({
         const existingCalendar = getters.getCalendarByName(calName.value)
         commit('selectCalendar', existingCalendar)
       }
+    },
+
+    async addUrls ({ commit }, urls) {
+      for (const newUrl of urls) {
+        const { docs } = await db.find({ selector: { _id: newUrl.name } })
+        const [foundUrl = {}] = docs
+
+        const url = {
+          ...newUrl,
+          ...foundUrl,
+          _id: newUrl.name,
+          type: 'url'
+        }
+
+        await db.put(url)
+        commit('addUrl', url)
+      }
+    },
+
+    async loadUrls ({ commit, dispatch }, urls) {
+      const requests = urls.map(axios.get)
+
+      try {
+        const responses = await Promise.all(requests)
+        const icsTexts = responses.map(({ data }) => data)
+        const calendars = icsTexts.map(icsToJson)
+
+        await dispatch('addUrls', calendars.map((calendar, index) => {
+          const { calName } = calendar
+          const url = urls[index]
+          return { name: calName.value, url }
+        }))
+
+        for (const calendar of calendars) {
+          commit('selectCalendar', calendar)
+        }
+      } catch (error) {
+        throw error
+      }
     }
   }
 })
@@ -121,8 +180,11 @@ async function initializeDB () {
     }
   })
 
+  const { docs: urls } = await db.find({ selector: { type: 'url' } })
+  await store.dispatch('addUrls', urls)
+
   const { docs: calendars } = await db.find({ selector: { type: 'calendar' } })
-  store.dispatch('addCalendars', calendars)
+  await store.dispatch('addCalendars', calendars)
 }
 
 initializeDB()
