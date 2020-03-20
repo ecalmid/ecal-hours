@@ -1,7 +1,7 @@
 <template lang="pug">
   ul.overview
     li.overview__item.overview__item--reverse
-      h5.overview__item-title.overview__item--bold.overview__item--big Enter Rate
+      h5.overview__item-title.overview__item--bold.overview__item--big Target Rate
       p.overview__item-rate.overview__item--bold.overview__item--big(
         contenteditable="true"
         @keydown.enter.prevent
@@ -10,7 +10,7 @@
       span.overview__item-arrow.overview__item--bold.overview__item--big →
       span.overview__item-hours-rate.overview__item--bold.overview__item--big {{ hoursByRate }}
 
-    template(v-for="(group, key) in eventGroups")
+    template(v-for="(group, key) in selectedEventsByGroups")
       li.overview__item.overview__item--selectable(
         :class="getGroupCssClasses(group)"
         @click="toggleGroup(group)"
@@ -58,7 +58,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { getEventMoments, getEventDuration } from '@/utils/event'
+import { getEventMoments, getEventDuration } from '@/utils/events'
 
 export default {
   data () {
@@ -71,7 +71,12 @@ export default {
   },
 
   computed: {
-    ...mapGetters(['eventGroups', 'totalHours', 'fullTimeHours']),
+    ...mapGetters([
+      'eventGroups',
+      'totalHours',
+      'fullTimeHours',
+      'selectedEventsByGroups'
+    ]),
 
     rate: {
       get () {

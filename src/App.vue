@@ -7,9 +7,9 @@ main.app(
   @dragleave="onDragLeave"
   @drop="onDrop"
 )
-  disclamer(
-    v-if="showDisclamer"
-  )
+  //- disclamer(
+  //-   v-if="showDisclamer"
+  //- )
 
   header.head(
     :class="headModifierClasses"
@@ -40,7 +40,11 @@ import Overview from '@/components/Overview'
 export default {
   name: 'app',
 
-  components: { Disclamer, Loader, Overview },
+  components: {
+    Disclamer,
+    Loader,
+    Overview
+  },
 
   data () {
     return {
@@ -52,10 +56,10 @@ export default {
   },
 
   computed: {
-    ...mapGetters(['eventGroups']),
+    ...mapGetters(['selectedCalendars']),
 
     showOverview () {
-      return Object.values(this.eventGroups).length > 0
+      return this.selectedCalendars.length > 0
     },
 
     headModifierClasses () {

@@ -1,40 +1,52 @@
 <template lang="pug">
 .loader
-  section.loader__url
-    input.loader__url-input(
-      v-for="input in urlInputs"
-      ref="entries"
-      type="text"
-      placeholder="Enter calendar URL"
-      @input="onUrlInput"
-    )
-
-    input.loader__url-submit(
-      type="submit"
-      value="Load URLs"
-      @click="onUrlSubmit"
-    )
-
-  section.loader__dropzone
-    .loader__dropzone-inner
-      span Click here or drag and drop some files [.ics]
-      input.loader__dropzone-input(
-        ref="fileInput"
-        type="file"
-        accept=".ics"
-        @change="onFileInput"
-        multiple
+  .loader__import
+    section.loader__url
+      input.loader__url-input(
+        v-for="input in urlInputs"
+        ref="entries"
+        type="text"
+        placeholder="Enter calendar URL"
+        @input="onUrlInput"
       )
+
+      input.loader__url-submit(
+        type="submit"
+        value="Load URLs"
+        @click="onUrlSubmit"
+      )
+
+    section.loader__dropzone
+      .loader__dropzone-inner
+        span Click here or drag and drop some files [.ics]
+        input.loader__dropzone-input(
+          ref="fileInput"
+          type="file"
+          accept=".ics"
+          @change="onFileInput"
+          multiple
+        )
+
+  .loader__files(v-if="calendars.length > 0")
+    files
 </template>
 
 <script>
 import axios from 'axios'
 import * as moment from 'moment'
+import { mapGetters } from 'vuex'
 import { icsToJson } from '@/utils/ics'
 import { b64ToString } from '@/utils/string'
-import { getEventSummary } from '@/utils/event'
+import { getEventSummary } from '@/utils/events'
+import Files from '@/components/Files'
 
 export default {
+  components: { Files },
+
+  computed: {
+    ...mapGetters(['calendars'])
+  },
+
   data () {
     return {
       urlInputs: 1
@@ -62,8 +74,10 @@ export default {
       try {
         const responses = await Promise.all(requests)
         const icsTexts = responses.map(({ data }) => data)
-        const eventGroups = this.getEventGroupsFromIcsTexts(icsTexts)
-        this.$store.commit('setEventGroups', eventGroups)
+        const calendars = icsTexts.map(icsToJson)
+        console.log(calendars)
+        this.$store.dispatch('addCalendars', calendars)
+        this.$store.dispatch('selectCalendars', calendars)
         this.$emit('onLoad')
       } catch (error) {
         this.$emit('onError', error)
@@ -78,8 +92,10 @@ export default {
         this.validateFiles(files)
         const fileReaders = [...files].map((file) => this.readFromFile(file))
         const icsTexts = await Promise.all(fileReaders)
-        const eventGroups = this.getEventGroupsFromIcsTexts(icsTexts)
-        this.$store.commit('setEventGroups', eventGroups)
+
+        const calendars = icsTexts.map(icsToJson)
+        this.$store.dispatch('addCalendars', calendars)
+        this.$store.dispatch('selectCalendars', calendars)
         this.$emit('onLoad')
       } catch (error) {
         this.$emit('onError', error)
@@ -107,6 +123,10 @@ export default {
         reader.onerror = error => reject(error)
         reader.readAsDataURL(file)
       })
+    },
+
+    getIcsJSONFromTexts (texts) {
+      return texts.map(icsToJson)
     },
 
     getEventGroupsFromIcsTexts (icsTexts) {
@@ -151,8 +171,14 @@ export default {
 <style lang="scss">
 .loader {
   display: flex;
-  flex-direction: column;
   flex: 1 1 auto;
+
+  &__import {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: 1 1 auto;
+  }
 
   &__url {
     width: 100%;
@@ -204,6 +230,12 @@ export default {
       width: 100%;
       height: 100%;
     }
+  }
+
+  &__files {
+    width: 30%;
+    flex: 0 0 auto;
+    padding: 0.5em;
   }
 }
 </style>

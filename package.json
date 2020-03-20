@@ -12,6 +12,8 @@
         "axios": ">=0.19.0",
         "ics-to-json": "^1.0.0",
         "moment": "^2.24.0",
+        "pouchdb": "^7.2.1",
+        "pouchdb-find": "^7.2.1",
         "rrule": "^2.6.0",
         "vue": "^2.6.6",
         "vue-contenteditable-directive": "^1.2.0",
