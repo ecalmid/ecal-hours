@@ -34,6 +34,7 @@ const store = new Vuex.Store({
     selectedEventsByGroups: (state) => {
       const { selectedCalendars } = state
       const events = selectedCalendars
+        .filter((calendar) => calendar)
         .map(({ events }) => events)
         .flat()
 
@@ -79,7 +80,6 @@ const store = new Vuex.Store({
 
       if (calendarIndex > -1) {
         calendars.splice(calendarIndex, 1)
-        console.log('update calendar')
       }
 
       calendars.push(calendar)

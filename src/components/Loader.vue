@@ -75,8 +75,7 @@ export default {
         const responses = await Promise.all(requests)
         const icsTexts = responses.map(({ data }) => data)
         const calendars = icsTexts.map(icsToJson)
-        console.log(calendars)
-        this.$store.dispatch('addCalendars', calendars)
+        await this.$store.dispatch('addCalendars', calendars)
         this.$store.dispatch('selectCalendars', calendars)
         this.$emit('onLoad')
       } catch (error) {
@@ -94,7 +93,7 @@ export default {
         const icsTexts = await Promise.all(fileReaders)
 
         const calendars = icsTexts.map(icsToJson)
-        this.$store.dispatch('addCalendars', calendars)
+        await this.$store.dispatch('addCalendars', calendars)
         this.$store.dispatch('selectCalendars', calendars)
         this.$emit('onLoad')
       } catch (error) {
