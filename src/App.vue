@@ -61,6 +61,8 @@ main.app(
         @keydown.enter.prevent
         v-contenteditable="rate"
       )
+      span.summary__item-arrow.summary__item--bold.summary__item--big →
+      span.summary__item-hours-rate.summary__item--bold.summary__item--big {{ hoursByRate }}
 
     template(v-for="(item, key) in summary")
       li.summary__item.summary__item--selectable(
@@ -154,6 +156,10 @@ export default {
           ? this.initialRateValue
           : value
       }
+    },
+
+    hoursByRate () {
+      return `${this.fullTimeHours * this.percentRate}h`
     },
 
     percentRate () {
@@ -565,6 +571,10 @@ h1, h2, h3, h4, h5, p, a, li, ul {
       &::after {
         content: '%'
       }
+    }
+
+    &-arrow {
+      margin: 0 0.5em;
     }
 
     @media screen and (max-width: 600px) {
