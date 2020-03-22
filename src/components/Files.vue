@@ -18,9 +18,13 @@
 
   .files__footer(
     v-if="showLoadItems"
-    @click="loadSelectedFiles()"
   )
-    span Load selected files
+    span(
+      @click="loadSelectedFiles()"
+    ) Load
+    span(
+      @click="removeSelectedFiles()"
+    ) Remove
 </template>
 
 <script>
@@ -77,6 +81,13 @@ export default {
       }
     },
 
+    async removeSelectedFiles () {
+      await Promise.all([
+        this.$store.dispatch('removeUrls', this.selectedUrls),
+        this.$store.dispatch('removeFiles', this.selectedFiles)
+      ])
+    },
+
     toggleUrl (url) {
       this.selectedUrls = toggleItemFromArray(this.selectedUrls, url)
     },
@@ -94,8 +105,7 @@ export default {
   flex-direction: column;
 
   &__calendar,
-  &__url,
-  &__footer {
+  &__url {
     cursor: pointer;
     user-select: none;
     border-bottom: solid 1px black;
@@ -131,8 +141,33 @@ export default {
   }
 
   &__footer {
-    padding: 0.5em 0;
-    padding-left: 0.5em;
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: solid 1px black;
+
+    span {
+      padding: 0.5em;
+      display: inline-block;
+      width: 50%;
+      text-transform: uppercase;
+      cursor: pointer;
+
+      &:hover {
+        background-color: rgb(0, 255, 0);
+        color: white;
+      }
+    }
+
+    span + span {
+      border-left: solid 1px black;
+      text-align: right;
+
+      &:hover {
+        background-color: rgb(255, 0, 0);
+        color: white;
+      }
+    }
   }
 
   &--selected {

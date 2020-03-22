@@ -3,8 +3,8 @@ import Vuex from 'vuex'
 import axios from 'axios'
 import PouchDB from 'pouchdb'
 import PouchDBFind from 'pouchdb-find'
-import { getEventDuration, getGroupsForEvents } from '@/utils/events'
 import { icsToJson } from '@/utils/ics'
+import { getEventDuration, getGroupsForEvents } from '@/utils/events'
 
 Vue.use(Vuex)
 
@@ -82,6 +82,17 @@ const store = new Vuex.Store({
       state.selectedCalendars.push(calendar)
     },
 
+    removeFile (state, file) {
+      const { calendars } = state
+      const { calName: newCalName } = file
+
+      const index = calendars.findIndex(({ calName }) => {
+        return calName.value === newCalName.value
+      })
+
+      calendars.splice(index, 1)
+    },
+
     addUrl (state, url) {
       const { urls } = state
 
@@ -94,6 +105,16 @@ const store = new Vuex.Store({
       }
 
       urls.push(url)
+    },
+
+    removeUrl (state, url) {
+      const { urls } = state
+
+      const index = urls.findIndex(({ name }) => {
+        return name === url.name
+      })
+
+      urls.splice(index, 1)
     },
 
     resetState (state) {
@@ -121,6 +142,17 @@ const store = new Vuex.Store({
       }
     },
 
+    async removeFiles ({ commit }, files) {
+      for (const file of files) {
+        const { calName } = file
+        const { docs } = await db.find({ selector: { _id: calName.value } })
+        const [foundFile = {}] = docs
+
+        await db.remove(foundFile)
+        commit('removeFile', foundFile)
+      }
+    },
+
     selectCalendars ({ getters, commit }, calendars) {
       for (const calendar of calendars) {
         const { calName } = calendar
@@ -143,6 +175,16 @@ const store = new Vuex.Store({
 
         await db.put(url)
         commit('addUrl', url)
+      }
+    },
+
+    async removeUrls ({ commit }, urls) {
+      for (const url of urls) {
+        const { docs } = await db.find({ selector: { _id: url.name } })
+        const [foundUrl = {}] = docs
+
+        await db.remove(foundUrl)
+        commit('removeUrl', foundUrl)
       }
     },
 
