@@ -1,20 +1,21 @@
 <template lang="pug">
 .files
-  .files__url(
-    v-for="url in urls"
-    :class="getItemCssClasses(url)"
-    @click="toggleUrl(url)"
-  )
-    span.files__name {{ url.name }}
-    span.files__extention URL
+  .files__items(@click="resetSelection")
+    .files__url(
+      v-for="url in urls"
+      :class="getItemCssClasses(url)"
+      @click.stop="toggleUrl(url)"
+    )
+      span.files__name {{ url.name }}
+      span.files__extention URL
 
-  .files__calendar(
-    v-for="calendar in calendars"
-    :class="getItemCssClasses(calendar)"
-    @click="toggleFile(calendar)"
-  )
-    span.files__name {{ calendar.calName.value }}
-    span.files__extention ICS
+    .files__calendar(
+      v-for="calendar in calendars"
+      :class="getItemCssClasses(calendar)"
+      @click.stop="toggleFile(calendar)"
+    )
+      span.files__name {{ calendar.calName.value }}
+      span.files__extention ICS
 
   .files__footer(
     v-if="showLoadItems"
@@ -94,6 +95,11 @@ export default {
 
     toggleFile (file) {
       this.selectedFiles = toggleItemFromArray(this.selectedFiles, file)
+    },
+
+    resetSelection () {
+      this.selectedUrls = []
+      this.selectedFiles = []
     }
   }
 }
@@ -103,6 +109,12 @@ export default {
 .files {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+
+  &__items {
+    height: 100%;
+  }
 
   &__calendar,
   &__url {
@@ -144,7 +156,9 @@ export default {
     padding: 0;
     display: flex;
     justify-content: space-between;
-    border-bottom: solid 1px black;
+    border-top: solid 1px black;
+    background-color: black;
+    color: white;
 
     span {
       padding: 0.5em;
@@ -160,7 +174,7 @@ export default {
     }
 
     span + span {
-      border-left: solid 1px black;
+      border-left: solid 1px white;
       text-align: right;
 
       &:hover {

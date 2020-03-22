@@ -202,6 +202,8 @@ export default {
 
 <style lang="scss">
 .overview {
+  border-top: solid 1px white;
+
   &__item,
   &__sub-item,
   &__foot-item {
