@@ -2,36 +2,87 @@
 .files
   .files__url(
     v-for="url in urls"
-    @click="loadUrl(url)"
+    :class="getItemCssClasses(url)"
+    @click="toggleUrl(url)"
   )
     span.files__name {{ url.name }}
     span.files__extention URL
 
   .files__calendar(
     v-for="calendar in calendars"
-    @click="selectCalendar(calendar)"
+    :class="getItemCssClasses(calendar)"
+    @click="toggleFile(calendar)"
   )
     span.files__name {{ calendar.calName.value }}
     span.files__extention ICS
+
+  .files__footer(
+    v-if="showLoadItems"
+    @click="loadSelectedFiles()"
+  )
+    span Load selected files
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
+import { toggleItemFromArray } from '@/utils/array'
 
 export default {
+  data () {
+    return {
+      selectedUrls: [],
+      selectedFiles: []
+    }
+  },
+
   computed: {
-    ...mapGetters(['calendars', 'urls'])
+    ...mapGetters(['calendars', 'urls']),
+
+    selectedItems () {
+      return [
+        ...this.selectedUrls,
+        ...this.selectedFiles
+      ]
+    },
+
+    showLoadItems () {
+      return this.selectedItems.length > 0
+    }
   },
 
   methods: {
-    async loadUrl (url) {
-      this.$emit('onLoad')
-      this.$store.dispatch('loadUrls', [url.url])
+    isSelected (item) {
+      return this.selectedItems.indexOf(item) > -1
     },
 
-    selectCalendar (calendar) {
-      this.$store.dispatch('selectCalendars', [calendar])
-      this.$emit('onLoad')
+    getItemCssClasses (item) {
+      return {
+        'files--selected': this.isSelected(item)
+      }
+    },
+
+    async loadSelectedFiles () {
+      const urls = this.selectedUrls.map((it) => it.url)
+      const files = this.selectedFiles
+
+      try {
+        await Promise.all([
+          this.$store.dispatch('loadUrls', urls),
+          this.$store.dispatch('selectCalendars', files)
+        ])
+
+        this.$emit('onLoad')
+      } catch (error) {
+        this.$emit('onError', error)
+      }
+    },
+
+    toggleUrl (url) {
+      this.selectedUrls = toggleItemFromArray(this.selectedUrls, url)
+    },
+
+    toggleFile (file) {
+      this.selectedFiles = toggleItemFromArray(this.selectedFiles, file)
     }
   }
 }
@@ -39,8 +90,12 @@ export default {
 
 <style lang="scss">
 .files {
+  display: flex;
+  flex-direction: column;
+
   &__calendar,
-  &__url {
+  &__url,
+  &__footer {
     cursor: pointer;
     user-select: none;
     border-bottom: solid 1px black;
@@ -55,7 +110,7 @@ export default {
     }
 
     &:hover {
-      background-color: black;
+      background-color: grey;
       color: white;
     }
   }
@@ -71,9 +126,20 @@ export default {
   &__extention {
     width: 20%;
     text-align: center;
-    padding: 0.5em;
+    padding: 0.5em 0;
     border-left: solid 1px black;
     flex: 0 0 auto;
+  }
+
+  &__footer {
+    padding: 0.5em 0;
+    justify-self: flex-end;
+  }
+
+  &--selected {
+    background-color: black !important;
+    color: white;
+    border-color: white !important;
   }
 }
 </style>
