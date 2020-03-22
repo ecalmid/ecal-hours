@@ -10,6 +10,7 @@ Vue.use(Vuex)
 
 const store = new Vuex.Store({
   state: {
+    isLoading: false,
     fullTimeHours: 1867.5,
     urls: [],
     calendars: [],
@@ -17,6 +18,10 @@ const store = new Vuex.Store({
   },
 
   getters: {
+    isLoading ({ isLoading }) {
+      return isLoading
+    },
+
     calendars ({ calendars }) {
       return calendars
     },
@@ -119,6 +124,10 @@ const store = new Vuex.Store({
 
     resetState (state) {
       state.selectedCalendars = []
+    },
+
+    setLoadingState (state, isLoading) {
+      state.isLoading = isLoading
     }
   },
 

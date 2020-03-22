@@ -11,6 +11,10 @@ main.app(
     v-if="showDisclamer"
   )
 
+  loading(
+    v-if="isLoading"
+  )
+
   header.head(
     :class="headModifierClasses"
   )
@@ -34,6 +38,7 @@ main.app(
 <script>
 import { mapGetters } from 'vuex'
 import Disclamer from '@/components/Disclamer'
+import Loading from '@/components/Loading'
 import Loader from '@/components/Loader'
 import Overview from '@/components/Overview'
 
@@ -52,6 +57,7 @@ export default {
 
   components: {
     Disclamer,
+    Loading,
     Loader,
     Overview
   },
@@ -66,7 +72,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(['selectedCalendars']),
+    ...mapGetters(['selectedCalendars', 'isLoading']),
 
     showOverview () {
       return this.selectedCalendars.length > 0

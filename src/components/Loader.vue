@@ -77,7 +77,9 @@ export default {
         .map(({ value }) => `${proxyUrl}${value}`)
 
       try {
+        this.$store.commit('setLoadingState', true)
         await this.$store.dispatch('loadUrls', urls)
+        this.$store.commit('setLoadingState', false)
         this.$emit('onLoad')
       } catch (error) {
         this.$emit('onError', error)
@@ -94,8 +96,10 @@ export default {
         const icsTexts = await Promise.all(fileReaders)
 
         const calendars = icsTexts.map(icsToJson)
+        this.$store.commit('setLoadingState', true)
         await this.$store.dispatch('addCalendars', calendars)
-        this.$store.dispatch('selectCalendars', calendars)
+        await this.$store.dispatch('selectCalendars', calendars)
+        this.$store.commit('setLoadingState', false)
         this.$emit('onLoad')
       } catch (error) {
         this.$emit('onError', error)

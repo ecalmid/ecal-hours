@@ -71,12 +71,14 @@ export default {
       const files = this.selectedFiles
 
       try {
+        this.$store.commit('setLoadingState', true)
         await Promise.all([
           this.$store.dispatch('loadUrls', urls),
           this.$store.dispatch('selectCalendars', files)
         ])
 
         this.$emit('onLoad')
+        this.$store.commit('setLoadingState', false)
       } catch (error) {
         this.$emit('onError', error)
       }
