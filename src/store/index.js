@@ -147,7 +147,11 @@ const store = new Vuex.Store({
     },
 
     async loadUrls ({ commit, dispatch }, urls) {
-      const requests = urls.map(axios.get)
+      const formatUrl = (url) => url.replace('webcal://', 'http://')
+
+      const requests = urls
+        .map(formatUrl)
+        .map(axios.get)
 
       try {
         const responses = await Promise.all(requests)
