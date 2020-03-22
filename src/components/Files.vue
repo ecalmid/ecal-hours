@@ -100,13 +100,10 @@ export default {
     user-select: none;
     border-bottom: solid 1px black;
     display: flex;
+    padding-left: 0.5em;
 
     span {
       text-transform: uppercase;
-    }
-
-    &:first-child {
-      border-top: solid 1px black;
     }
 
     &:hover {
@@ -133,7 +130,7 @@ export default {
 
   &__footer {
     padding: 0.5em 0;
-    justify-self: flex-end;
+    padding-left: 0.5em;
   }
 
   &--selected {

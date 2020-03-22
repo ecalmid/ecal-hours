@@ -176,18 +176,19 @@ export default {
     flex-direction: column;
     width: 100%;
     flex: 1 1 auto;
+    border-left: solid 1px black;
   }
 
   &__url {
     width: 100%;
-    padding: 0.5em 0.5em 0 0.5em;
+    padding: 0;
 
     &-input {
       width: 100%;
       font-size: 1em;
-      padding: 0.5em 0;
+      padding: 0.5em 0 0.5em 0.5em;
       border: none;
-      border-top: solid 1px black;
+      border-radius: 0;
     }
 
     &-submit {
@@ -196,10 +197,11 @@ export default {
       border-top: solid 1px black;
       border-bottom: solid 1px black;
       font-size: 1em;
-      padding: 0.5em 0;
+      padding: 0.5em 0 0.5em 0.5em;
       width: 100%;
       text-align: left;
       cursor: pointer;
+      border-radius: 0;
     }
   }
 
@@ -207,12 +209,10 @@ export default {
     display: block;
     width: 100%;
     height: 100%;
-    padding: 0.5em;
 
     &-inner {
       width: 100%;
       height: 100%;
-      border: dashed 1px;
       position: relative;
       display: flex;
       align-items: center;
@@ -233,7 +233,6 @@ export default {
   &__files {
     width: 30%;
     flex: 0 0 auto;
-    padding: 0.5em;
   }
 }
 </style>
