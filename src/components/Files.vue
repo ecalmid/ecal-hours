@@ -100,7 +100,9 @@ export default {
     user-select: none;
     border-bottom: solid 1px black;
     display: flex;
-    padding-left: 0.5em;
+    padding-left: 0.5rem;
+    height: 2em;
+    box-sizing: border-box;
 
     span {
       text-transform: uppercase;
@@ -136,7 +138,6 @@ export default {
   &--selected {
     background-color: black !important;
     color: white;
-    border-color: white !important;
   }
 }
 </style>

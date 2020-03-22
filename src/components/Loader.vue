@@ -1,7 +1,9 @@
 <template lang="pug">
 .loader
   .loader__files(v-if="showFiles")
-    files(@onLoad="$emit('onLoad')")
+    files(
+      @onLoad="onLoad"
+    )
 
   .loader__import
     section.loader__url
@@ -161,6 +163,10 @@ export default {
 
         return list
       }, {})
+    },
+
+    onLoad () {
+      console.log('load')
     }
   }
 }
@@ -183,25 +189,26 @@ export default {
     width: 100%;
     padding: 0;
 
-    &-input {
+    &-input,
+    &-submit {
       width: 100%;
       font-size: 1em;
       padding: 0.5em 0 0.5em 0.5em;
-      border: none;
       border-radius: 0;
+      line-height: 1;
+      background-color: transparent;
+      text-align: left;
+      height: 2em;
+      border: none;
+      border-bottom: solid 1px black;
+    }
+
+    &-input {
+      line-height: 2;
     }
 
     &-submit {
-      background-color: transparent;
-      border: none;
-      border-top: solid 1px black;
-      border-bottom: solid 1px black;
-      font-size: 1em;
-      padding: 0.5em 0 0.5em 0.5em;
-      width: 100%;
-      text-align: left;
       cursor: pointer;
-      border-radius: 0;
     }
   }
 

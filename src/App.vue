@@ -135,7 +135,6 @@ body {
   padding: 0.5rem;
   background: black;
   color: white;
-  border-bottom: solid 1px;
   position: sticky;
   top: 0;
 
