@@ -11,7 +11,7 @@
     "dependencies": {
         "axios": ">=0.19.0",
         "ics-to-json": "^1.0.0",
-        "moment": "^2.24.0",
+        "moment": "^2.29.2",
         "pouchdb": "^7.2.1",
         "pouchdb-find": "^7.2.1",
         "rrule": "^2.6.0",
